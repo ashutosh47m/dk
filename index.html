@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - geometry - cube</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				margin: 0px;
+				background-color: #000000;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<script src="js/three.js"></script>
+        <script src="js/OrbitControls.js"></script>
+		<script src="js/MTLLoader.js"></script>
+		<script src="js/OBJLoader.js"></script>
+        
+
+		<script>
+            var pointLight1; var p1Mesh;
+            var pointLight2; var p2Mesh;
+            var pointLight3; var p3Mesh;	
+            
+            function skybox()
+            {
+                var skybox_geometry = new THREE.CubeGeometry(10000, 10000, 10000);
+                var skybox_textures = 
+                    [
+                        new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load("/textures/skybox/greenhaze_ft.png"), side: THREE.DoubleSide } ),  
+                        new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load("/textures/skybox/greenhaze_bk.png"), side: THREE.DoubleSide } ),  
+                        new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load("/textures/skybox/greenhaze_up.png"), side: THREE.DoubleSide } ),  
+                        new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load("/textures/skybox/greenhaze_dn.png"), side: THREE.DoubleSide } ),  
+                        new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load("/textures/skybox/greenhaze_rt.png"), side: THREE.DoubleSide } ),  
+                        new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load("/textures/skybox/greenhaze_lf.png"), side: THREE.DoubleSide } )
+                    ];
+                
+                var skybox_material = new THREE.MeshFaceMaterial(skybox_textures);
+                var skybox_mesh = new THREE.Mesh(skybox_geometry, skybox_material);
+                scene.add(skybox_mesh);                
+            }
+            
+            function box(position)
+			{
+				var texture = new THREE.TextureLoader().load( 'textures/10482352_10203290779602810_653395397_o.jpg' );
+
+				var cube_geometry = new THREE.BoxBufferGeometry( 100,100,40 );
+				var cube_material = new THREE.MeshPhongMaterial( { map: texture, wireframe: false } );
+				
+				cube = new THREE.Mesh( cube_geometry, cube_material );
+				cube.castShadow = true;
+                cube.receiveShadow = true;
+
+                cube.position.set(position.x, position.y, position.z);
+				scene.add( cube );
+			}
+
+			function grid()
+			{
+				var planeGeometry = new THREE.PlaneBufferGeometry( 1800, 1800, 1, 1 );
+				var planeMaterial = new THREE.MeshPhongMaterial( { color: 0x494949, side:THREE.DoubleSide} );
+				plane = new THREE.Mesh( planeGeometry, planeMaterial );
+				plane.position.set(0, -100, 0);
+
+				plane.receiveShadow = true;
+				plane.rotation.x = -90 * Math.PI / 180;
+				scene.add( plane );
+			}
+			
+			function objloader()
+			{
+				// instantiate a loader
+				var loader = new THREE.OBJLoader();
+
+				// load a resource
+
+				var mtlLoader = new THREE.MTLLoader();
+				mtlLoader.setTexturePath('/textures/');
+				mtlLoader.setPath('/3dassets/');
+				mtlLoader.load('2.6uv.mtl', function (materials) 
+				{
+				
+					materials.preload();
+				
+					var loader = new THREE.OBJLoader();
+					loader.setMaterials(materials);
+					loader.setPath('/3dassets/');
+					loader.load( '2.6uv.obj',
+					function ( object ) 
+					{
+						object.traverse( function ( child ) 
+						{
+							if ( child instanceof THREE.Mesh ) 
+							{
+								child.castShadow = true;
+							}
+							object.position.y = -125;						
+							scene.add( object );
+						}
+						);
+					}
+				);
+				
+				});				
+			}
+
+			function lighting()
+			{
+				const light = new THREE.DirectionalLight( 0xffffff, .3);
+				light.position.set( -100, 500, 400 );
+				light.castShadow = true;
+				
+				const d = 200;
+				light.shadowCameraLeft = -d;
+				light.shadowCameraRight = d;
+				light.shadowCameraTop = d;
+				light.shadowCameraBottom = -d;
+				
+				light.shadowCameraFar = 1000;
+				
+                var plightob1  = new THREE.DodecahedronBufferGeometry(20);
+                var plightmat1 = new THREE.MeshPhongMaterial( { color:0xFF0045 } );
+                var plightmat2 = new THREE.MeshPhongMaterial( { color:0xffff00 } );
+                var plightmat3 = new THREE.MeshPhongMaterial( { color:0x0000ff } );
+
+                p1Mesh = new THREE.Mesh (plightob1, plightmat1);
+                p2Mesh = new THREE.Mesh (plightob1, plightmat2);
+                p3Mesh = new THREE.Mesh (plightob1, plightmat3);
+                
+                p1Mesh.castShadow = true;
+                p2Mesh.castShadow = true;
+                p3Mesh.castShadow = true;
+
+                scene.add(p1Mesh);
+                scene.add(p2Mesh);
+                scene.add(p3Mesh);
+                
+                pointLight1 = new THREE.PointLight(0xFF0045, 1.4, 150);
+                scene.add(pointLight1);
+                
+                pointLight2 = new THREE.PointLight(0xffff00, 1.0, 350);
+                scene.add(pointLight2);
+
+                pointLight3 = new THREE.PointLight(0x0000ff, 4.4, 150);
+                scene.add(pointLight3);
+                
+				scene.add( light );
+				scene.add( new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.7 ) );
+				scene.add( new THREE.AmbientLight(0xa59f75, 0.5) );
+			}
+
+			function init()
+      		{
+
+				camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 1, 11000 );
+				camera.position.x = 300;
+				camera.position.z = 300;
+				camera.position.y = 200;
+				camera.lookAt(new THREE.Vector3(0,0,0));
+
+				controls = new THREE.OrbitControls( camera );
+                controls.addEventListener('change', render);
+                
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0x000000 );
+
+				//var canvas = document.createElement('canvas');
+				//var context = canvas.getContext('webgl2');
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.shadowMap.enabled = true;
+
+				document.body.appendChild( renderer.domElement );
+
+				window.addEventListener( 'resize', onWindowResize, false );
+			}
+
+            function update()
+            {
+				cube.rotation.y += 0.01;
+				cube.rotation.x += 0.005;
+
+                var time = Date.now() * .0005;
+                pointLight1.position.x = Math.sin(time * .7) * 130;
+                pointLight1.position.y = Math.cos(time * .5) * 30;
+                pointLight1.position.z = Math.cos(time * .3) * 130;
+
+                pointLight2.position.x = Math.cos(time * .7) * 30;
+                pointLight2.position.y = Math.sin(time * .5) * 130;
+                pointLight2.position.z = Math.sin(time * .3) * 30;
+
+                pointLight3.position.x = Math.sin(time * .7) * 30;
+                pointLight3.position.y = Math.cos(time * .5) * 13;
+                pointLight3.position.z = Math.sin(time * .3) * 30;
+                
+                p1Mesh.position.set(pointLight1.position.x, pointLight1.position.y, pointLight1.position.z);
+                p2Mesh.position.set(pointLight2.position.x, pointLight2.position.y, pointLight2.position.z);
+                p3Mesh.position.set(pointLight3.position.x, pointLight3.position.y, pointLight3.position.z);
+                
+                controls.update();
+                
+            }
+            
+			function gameloop()
+			{
+				requestAnimationFrame( gameloop );
+                update();
+                render();
+			}
+            function render()
+            {
+				renderer.render( scene, camera );
+            }
+
+
+			init();
+			objloader();
+            skybox();
+			box(new THREE.Vector3(100,100,0));
+			box(new THREE.Vector3(144,0,0));
+			grid();
+			lighting();
+			gameloop();
+
+			function onWindowResize()
+			{
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+		</script>
+
+	</body>
+</html>
