@@ -18,13 +18,15 @@
         <script src="js/OrbitControls.js"></script>
 		<script src="js/MTLLoader.js"></script>
 		<script src="js/OBJLoader.js"></script>
-        
+		<script src="js/stats.min.js"></script>
+      
 
 		<script>
             var pointLight1; var p1Mesh;
             var pointLight2; var p2Mesh;
             var pointLight3; var p3Mesh;	
-            
+			var stats;
+			
             function skybox()
             {
                 var skybox_geometry = new THREE.CubeGeometry(10000, 10000, 10000);
@@ -88,7 +90,7 @@
 					var loader = new THREE.OBJLoader();
 					loader.setMaterials(materials);
 					loader.setPath('/3dassets/');
-					loader.load( '2.6uv.obj',
+					loader.load( 'test_terr_4.obj',
 					function ( object ) 
 					{
 						object.traverse( function ( child ) 
@@ -96,6 +98,7 @@
 							if ( child instanceof THREE.Mesh ) 
 							{
 								child.castShadow = true;
+								child.receiveShadow = true;
 							}
 							object.position.y = -125;						
 							scene.add( object );
@@ -109,7 +112,7 @@
 
 			function lighting()
 			{
-				const light = new THREE.DirectionalLight( 0xffffff, .3);
+				const light = new THREE.DirectionalLight( 0x22ff44, .3);
 				light.position.set( -100, 500, 400 );
 				light.castShadow = true;
 				
@@ -177,6 +180,9 @@
 
 				document.body.appendChild( renderer.domElement );
 
+				stats = new Stats();
+				document.body.appendChild( stats.dom );
+				
 				window.addEventListener( 'resize', onWindowResize, false );
 			}
 
@@ -206,11 +212,12 @@
                 
             }
             
-			function gameloop()
+			function gameloop() 
 			{
 				requestAnimationFrame( gameloop );
                 update();
                 render();
+				stats.update();
 			}
             function render()
             {
