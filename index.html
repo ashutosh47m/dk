@@ -19,7 +19,8 @@
 		<script src="js/MTLLoader.js"></script>
 		<script src="js/OBJLoader.js"></script>
 		<script src="js/stats.min.js"></script>
-      
+		<script src="js/GLTFLoader.js"></script>
+  
 
 		<script>
             var pointLight1; var p1Mesh;
@@ -27,24 +28,22 @@
             var pointLight3; var p3Mesh;	
 			var stats;
 			
+			var background;
+
             function skybox()
             {
-                var skybox_geometry = new THREE.CubeGeometry(10000, 10000, 10000);
-                var skybox_textures = 
-                    [
-                        new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load("/textures/skybox/greenhaze_ft.png"), side: THREE.DoubleSide } ),  
-                        new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load("/textures/skybox/greenhaze_bk.png"), side: THREE.DoubleSide } ),  
-                        new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load("/textures/skybox/greenhaze_up.png"), side: THREE.DoubleSide } ),  
-                        new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load("/textures/skybox/greenhaze_dn.png"), side: THREE.DoubleSide } ),  
-                        new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load("/textures/skybox/greenhaze_rt.png"), side: THREE.DoubleSide } ),  
-                        new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load("/textures/skybox/greenhaze_lf.png"), side: THREE.DoubleSide } )
-                    ];
-                
-                var skybox_material = new THREE.MeshFaceMaterial(skybox_textures);
-                var skybox_mesh = new THREE.Mesh(skybox_geometry, skybox_material);
-                scene.add(skybox_mesh);                
+				var urls = [ 
+				'greenhaze_ft.png', 
+				'greenhaze_bk.png', 
+				'greenhaze_up.png', 
+				'greenhaze_dn.png', 
+				'greenhaze_rt.png', 
+				'greenhaze_lf.png' ];
+				var loader = new THREE.CubeTextureLoader().setPath( 'textures/skybox/' );
+				background = loader.load( urls );
+				scene.background = background;
             }
-            
+
             function box(position)
 			{
 				var texture = new THREE.TextureLoader().load( 'textures/10482352_10203290779602810_653395397_o.jpg' );
@@ -71,6 +70,35 @@
 				plane.rotation.x = -90 * Math.PI / 180;
 				scene.add( plane );
 			}
+
+			function gltfLoader()
+			{
+				var textureLoader = new THREE.TextureLoader();
+				var material = new THREE.MeshPhongMaterial( {
+					color: 0xdddddd,
+					specular: 0xffffff,
+					shininess: 30,
+					map: textureLoader.load( "/textures/treebark.jpg" ),
+					specularMap: textureLoader.load( "/textures/treebark_SPEC.png" ),
+					normalMap: textureLoader.load( "/textures/treebark_NRM.png" ),
+					normalScale: new THREE.Vector2( 0.999, 0.999)
+				} );
+
+				loader = new THREE.GLTFLoader();
+				loader.load( "/3dassets/test.gltf", function ( gltf ) 
+				{
+					gltf.scene.traverse( function ( child ) 
+					{
+						if ( child.isMesh ) 
+						{
+							child.material.envMap = background;
+							child.receiveShadow = true;
+							child.material   = material;
+						}
+					});
+					scene.add( gltf.scene );
+				} );				
+			}
 			
 			function objloader()
 			{
@@ -82,9 +110,8 @@
 				var mtlLoader = new THREE.MTLLoader();
 				mtlLoader.setTexturePath('/textures/');
 				mtlLoader.setPath('/3dassets/');
-				mtlLoader.load('2.6uv.mtl', function (materials) 
+				mtlLoader.load('test_terr_4.mtl', function (materials) 
 				{
-				
 					materials.preload();
 				
 					var loader = new THREE.OBJLoader();
@@ -112,7 +139,7 @@
 
 			function lighting()
 			{
-				const light = new THREE.DirectionalLight( 0x22ff44, .3);
+				const light = new THREE.DirectionalLight( 0xffffff, .3);
 				light.position.set( -100, 500, 400 );
 				light.castShadow = true;
 				
@@ -226,7 +253,8 @@
 
 
 			init();
-			objloader();
+			//objloader();
+			gltfLoader();
             skybox();
 			box(new THREE.Vector3(100,100,0));
 			box(new THREE.Vector3(144,0,0));

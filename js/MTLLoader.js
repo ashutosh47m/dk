@@ -548,11 +548,15 @@ THREE.MTLLoader.MaterialCreator.prototype = {
 
 		var texture;
 		var loader = THREE.Loader.Handlers.get( url );
+		console.log(url);
 		var manager = ( this.manager !== undefined ) ? this.manager : THREE.DefaultLoadingManager;
+
+		//var maxAnisotropy = capabilities.getMaxAnisotropy();
 
 		if ( loader === null ) {
 
 			loader = new THREE.TextureLoader( manager );
+			loader.anisotropy = 16;
 
 		}
 
