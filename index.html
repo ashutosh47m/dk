@@ -78,11 +78,27 @@
 					color: 0xdddddd,
 					specular: 0xffffff,
 					shininess: 30,
-					map: textureLoader.load( "/textures/treebark.jpg" ),
-					specularMap: textureLoader.load( "/textures/treebark_SPEC.png" ),
-					normalMap: textureLoader.load( "/textures/treebark_NRM.png" ),
+					map: textureLoader.load( "/textures/Floor_C.jpg" ),
+					specularMap: textureLoader.load( "/textures/Floor_S.jpg" ),
+					normalMap: textureLoader.load( "/textures/Floor_N.jpg" ),
 					normalScale: new THREE.Vector2( 0.999, 0.999)
 				} );
+
+//				material.map.anisotropy = 16;
+//				material.specularMap.anisotropy = 16;
+//				material.normalMap.anisotropy = 16;
+
+				material.map.wrapS = THREE.RepeatWrapping;
+				material.map.wrapT = THREE.RepeatWrapping;
+				material.map.repeat.set( 1, 1 );
+
+				material.specularMap.wrapS = THREE.RepeatWrapping;
+				material.specularMap.wrapT = THREE.RepeatWrapping;
+				material.specularMap.repeat.set( 1, 1 );
+
+				material.normalMap.wrapS = THREE.RepeatWrapping;
+				material.normalMap.wrapT = THREE.RepeatWrapping;
+				material.normalMap.repeat.set( 1, 1 );
 
 				loader = new THREE.GLTFLoader();
 				loader.load( "/3dassets/test.gltf", function ( gltf ) 
